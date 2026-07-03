@@ -42,3 +42,6 @@ next-env.d.ts
 
 # Claude Code internal files
 .claude/
+
+# Development utility scripts
+/scripts/
