@@ -1,56 +1,35 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useMemo } from "react";
 import { getTeamById, Team, Match } from "@/lib/api";
+import { useFetch } from "@/hooks/useFetch";
+import { useParams } from "next/navigation";
 import MatchCard from "@/components/MatchCard";
 import TeamAvatar from "@/components/TeamAvatar";
 import Link from "next/link";
 import Image from "next/image";
-import { useParams } from "next/navigation";
 import { getFlag } from "@/lib/flags";
-
-const POT_CONFIG: Record<number, { label: string; accent: string; badgeBg: string; badgeText: string }> = {
-  1: { label: "Bombo 1", accent: "#FFC72C", badgeBg: "rgba(255,199,44,0.15)", badgeText: "#FFC72C" },
-  2: { label: "Bombo 2", accent: "#60a5fa", badgeBg: "rgba(96,165,250,0.15)", badgeText: "#93c5fd" },
-  3: { label: "Bombo 3", accent: "#34d399", badgeBg: "rgba(52,211,153,0.15)", badgeText: "#6ee7b7" },
-  4: { label: "Bombo 4", accent: "#f87171", badgeBg: "rgba(248,113,113,0.15)", badgeText: "#fca5a5" },
-};
-
-const STARS = [
-  "top-3 left-[8%]", "top-5 left-[20%]", "top-2 left-[35%]", "top-6 left-[50%]",
-  "top-4 left-[65%]", "top-3 left-[78%]", "top-5 left-[90%]",
-  "bottom-4 left-[12%]", "bottom-3 left-[30%]", "bottom-5 left-[55%]",
-  "bottom-4 left-[72%]", "bottom-3 left-[88%]",
-];
+import { HERO_BG, HERO_STARS, POT_CONFIG } from "@/lib/constants";
 
 export default function TeamDetailPage() {
   const params = useParams();
   const id = Number(params.id);
 
-  const [team, setTeam] = useState<Team | null>(null);
-  const [matches, setMatches] = useState<Match[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const { loading, error, data } = useFetch(() => getTeamById(id), [id]);
+  const team: Team | null = data?.team ?? null;
+  const matches: Match[] = data?.matches ?? [];
 
-  useEffect(() => {
-    if (!id) return;
-    getTeamById(id)
-      .then((data) => { setTeam(data.team); setMatches(data.matches); })
-      .catch((e) => setError(e instanceof Error ? e.message : "Error desconocido"))
-      .finally(() => setLoading(false));
-  }, [id]);
-
-  const homeMatches = matches.filter((m) => m.homeTeam.id === id);
-  const awayMatches = matches.filter((m) => m.awayTeam.id === id);
+  const homeMatches = useMemo(() => matches.filter((m) => m.homeTeam.id === id), [matches, id]);
+  const awayMatches = useMemo(() => matches.filter((m) => m.awayTeam.id === id), [matches, id]);
   const cfg = team?.pot ? POT_CONFIG[team.pot] : null;
 
   return (
     <div className="flex flex-col flex-1">
 
       {/* Hero */}
-      <div className="w-full py-12 px-4 relative overflow-hidden" style={{ background: "linear-gradient(135deg, #0a1628 0%, #0d2244 60%, #1a3a6b 100%)" }}>
+      <div className="w-full py-12 px-4 relative overflow-hidden" style={{ background: HERO_BG }}>
         <div className="absolute inset-0 pointer-events-none select-none">
-          {STARS.map((pos, i) => (
+          {HERO_STARS.map((pos, i) => (
             <span key={i} className={`absolute text-yellow-400/25 animate-pulse ${pos}`}
               style={{ animationDelay: `${i * 0.3}s`, animationDuration: "2.5s", fontSize: i % 3 === 0 ? "18px" : "12px" }}>
               ★

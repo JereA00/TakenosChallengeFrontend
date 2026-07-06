@@ -56,6 +56,7 @@ export default function MatchFilters({
         <div className="flex flex-col" style={{ minWidth: 160 }}>
           <label style={labelStyle}>País</label>
           <select
+            aria-label="Filtrar por país"
             value={countryName ?? ""}
             onChange={(e) => onCountryChange(e.target.value || undefined)}
             disabled={!!teamId}
@@ -71,6 +72,7 @@ export default function MatchFilters({
         <div className="flex flex-col" style={{ minWidth: 190 }}>
           <label style={labelStyle}>Equipo</label>
           <select
+            aria-label="Filtrar por equipo"
             value={teamId ? String(teamId) : ""}
             onChange={(e) => onTeamChange(e.target.value ? Number(e.target.value) : undefined)}
             style={{ ...selectStyle, minWidth: 190 }}
@@ -85,6 +87,7 @@ export default function MatchFilters({
         <div className="flex flex-col">
           <label style={labelStyle}>Jornada</label>
           <select
+            aria-label="Filtrar por jornada"
             value={matchDay ? String(matchDay) : ""}
             onChange={(e) => onMatchDayChange(e.target.value ? Number(e.target.value) : undefined)}
             style={{ ...selectStyle, minWidth: 140 }}
@@ -99,6 +102,7 @@ export default function MatchFilters({
         <div className="flex flex-col">
           <label style={labelStyle}>Local / Visitante</label>
           <select
+            aria-label="Filtrar por localía"
             value={location ?? ""}
             onChange={(e) => onLocationChange(e.target.value ? (e.target.value as "home" | "away") : undefined)}
             disabled={!teamId}

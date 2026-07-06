@@ -1,26 +1,37 @@
 "use client";
 
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useMemo, useReducer, useState } from "react";
 import { getMatches, getTeams, Match, Team, MatchesResponse } from "@/lib/api";
+import { HERO_BG, HERO_STARS } from "@/lib/constants";
+import { groupMatchesByDay } from "@/lib/matches";
 import MatchCard from "@/components/MatchCard";
 import MatchFilters from "@/components/MatchFilters";
 import Pagination from "@/components/Pagination";
 import Link from "next/link";
 import Image from "next/image";
 
-const STARS = [
-  "top-3 left-[8%]", "top-5 left-[20%]", "top-2 left-[35%]", "top-6 left-[50%]",
-  "top-4 left-[65%]", "top-3 left-[78%]", "top-5 left-[90%]",
-  "bottom-4 left-[12%]", "bottom-3 left-[30%]", "bottom-5 left-[55%]",
-  "bottom-4 left-[72%]", "bottom-3 left-[88%]",
-];
+
+type FetchState = {
+  loading: boolean;
+  error: string | null;
+  matches: Match[];
+  pagination: { page: number; totalPages: number; total: number };
+};
+type FetchAction =
+  | { type: "success"; matches: Match[]; pagination: FetchState["pagination"] }
+  | { type: "error"; message: string };
+
+function fetchReducer(_: FetchState, action: FetchAction): FetchState {
+  if (action.type === "success")
+    return { loading: false, error: null, matches: action.matches, pagination: action.pagination };
+  return { loading: false, error: action.message, matches: [], pagination: { page: 1, totalPages: 1, total: 0 } };
+}
+
+const INITIAL_FETCH_STATE: FetchState = { loading: true, error: null, matches: [], pagination: { page: 1, totalPages: 1, total: 0 } };
 
 export default function MatchesPage() {
-  const [matches, setMatches] = useState<Match[]>([]);
+  const [{ loading, error, matches, pagination }, dispatch] = useReducer(fetchReducer, INITIAL_FETCH_STATE);
   const [teams, setTeams] = useState<Team[]>([]);
-  const [pagination, setPagination] = useState({ page: 1, totalPages: 1, total: 0 });
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
 
   const [teamId, setTeamId] = useState<number | undefined>();
   const [matchDay, setMatchDay] = useState<number | undefined>();
@@ -28,22 +39,23 @@ export default function MatchesPage() {
   const [countryName, setCountryName] = useState<string | undefined>();
   const [page, setPage] = useState(1);
 
-  const fetchMatches = useCallback(async () => {
-    setLoading(true);
-    setError(null);
-    try {
-      const data: MatchesResponse = await getMatches({ teamId, matchDay, location, countryName, page, limit: 18 });
-      setMatches(data.matches);
-      setPagination({ page: data.pagination.page, totalPages: data.pagination.totalPages, total: data.pagination.total });
-    } catch (e) {
-      setError(e instanceof Error ? e.message : "Error desconocido");
-    } finally {
-      setLoading(false);
-    }
-  }, [teamId, matchDay, location, countryName, page]);
-
   useEffect(() => { getTeams().then(setTeams).catch(() => {}); }, []);
-  useEffect(() => { fetchMatches(); }, [fetchMatches]);
+
+  useEffect(() => {
+    let cancelled = false;
+    getMatches({ teamId, matchDay, location, countryName, page, limit: 18 })
+      .then((data: MatchesResponse) => {
+        if (!cancelled) dispatch({
+          type: "success",
+          matches: data.matches,
+          pagination: { page: data.pagination.page, totalPages: data.pagination.totalPages, total: data.pagination.total },
+        });
+      })
+      .catch((e) => {
+        if (!cancelled) dispatch({ type: "error", message: e instanceof Error ? e.message : "Error desconocido" });
+      });
+    return () => { cancelled = true; };
+  }, [teamId, matchDay, location, countryName, page]);
 
   function handleReset() { setTeamId(undefined); setMatchDay(undefined); setLocation(undefined); setCountryName(undefined); setPage(1); }
   function handleTeamChange(id?: number) { setTeamId(id); setLocation(undefined); setPage(1); }
@@ -51,22 +63,17 @@ export default function MatchesPage() {
   function handleLocationChange(loc?: "home" | "away") { setLocation(loc); setPage(1); }
   function handleCountryChange(country?: string) { setCountryName(country); setTeamId(undefined); setLocation(undefined); setPage(1); }
 
-  // Agrupar partidos por jornada
-  const matchesByDay = matches.reduce<Record<number, Match[]>>((acc, m) => {
-    if (!acc[m.matchDay]) acc[m.matchDay] = [];
-    acc[m.matchDay].push(m);
-    return acc;
-  }, {});
-  const sortedDays = Object.keys(matchesByDay).map(Number).sort((a, b) => a - b);
+  const matchesByDay = useMemo(() => groupMatchesByDay(matches), [matches]);
+  const sortedDays = useMemo(() => Object.keys(matchesByDay).map(Number).sort((a, b) => a - b), [matchesByDay]);
 
   return (
     <div className="flex flex-col flex-1">
       {/* Hero */}
       <div className="w-full py-12 px-4 relative overflow-hidden"
-        style={{ background: "linear-gradient(135deg, #0a1628 0%, #0d2244 60%, #1a3a6b 100%)" }}>
+        style={{ background: HERO_BG }}>
         {/* Estrellas */}
         <div className="absolute inset-0 pointer-events-none select-none">
-          {STARS.map((pos, i) => (
+          {HERO_STARS.map((pos, i) => (
             <span key={i} className={`absolute text-yellow-400/25 animate-pulse ${pos}`}
               style={{ animationDelay: `${i * 0.3}s`, animationDuration: "2.5s", fontSize: i % 3 === 0 ? "18px" : "12px" }}>★</span>
           ))}
