@@ -3,6 +3,7 @@
 import { Match } from "@/lib/api";
 import TeamAvatar from "@/components/TeamAvatar";
 import { getFlag } from "@/lib/flags";
+import { MESSAGES } from "@/lib/messages";
 
 interface Props {
   match: Match;
@@ -33,9 +34,9 @@ export default function MatchCard({ match }: Props) {
       <div className="flex flex-col items-center shrink-0 gap-0.5 w-14">
         <span className="text-xs font-black px-2 py-0.5 rounded-full tabular-nums"
           style={{ background: "rgba(255,199,44,0.15)", color: "#FFC72C" }}>
-          J{match.matchDay}
+          {MESSAGES.matchCard.matchdayBadge(match.matchDay)}
         </span>
-        <span className="text-[10px] font-bold tracking-widest" style={{ color: "rgba(255,255,255,0.25)" }}>VS</span>
+        <span className="text-[10px] font-bold tracking-widest" style={{ color: "rgba(255,255,255,0.25)" }}>{MESSAGES.matchCard.vs}</span>
       </div>
 
       {/* Visitante */}

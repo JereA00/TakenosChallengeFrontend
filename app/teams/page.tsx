@@ -7,7 +7,8 @@ import Image from "next/image";
 
 import TeamAvatar from "@/components/TeamAvatar";
 import { getFlag } from "@/lib/flags";
-import { HERO_BG, HERO_STARS, POT_CONFIG } from "@/lib/constants";
+import { HERO_BG, HERO_STARS, POT_CONFIG, POT_IDS } from "@/lib/constants";
+import { MESSAGES } from "@/lib/messages";
 
 export default function TeamsPage() {
   const [teams, setTeams] = useState<Team[]>([]);
@@ -17,7 +18,7 @@ export default function TeamsPage() {
   useEffect(() => {
     getTeams()
       .then(setTeams)
-      .catch((e) => setError(e instanceof Error ? e.message : "Error desconocido"))
+      .catch((e) => setError(e instanceof Error ? e.message : MESSAGES.errors.unknown))
       .finally(() => setLoading(false));
   }, []);
 
@@ -54,18 +55,18 @@ export default function TeamsPage() {
               <Image src="/ucl-ball.png" alt="UCL" width={72} height={68} className="object-contain invert" />
             </div>
             <div>
-              <p className="text-yellow-400/80 text-xs font-bold tracking-widest uppercase mb-1">UEFA</p>
+              <p className="text-yellow-400/80 text-xs font-bold tracking-widest uppercase mb-1">{MESSAGES.header.uefa}</p>
               <h1 className="text-3xl font-black text-white tracking-tight leading-none">
                 Champions <span className="text-yellow-400">League</span>
               </h1>
-              <p className="text-blue-300/70 text-sm mt-1">Equipos · Fase de Liga · 2025/26</p>
-              {!loading && <p className="text-white/40 text-xs mt-0.5">{teams.length} equipos participantes</p>}
+              <p className="text-blue-300/70 text-sm mt-1">{MESSAGES.teams.subtitle}</p>
+              {!loading && <p className="text-white/40 text-xs mt-0.5">{teams.length} {MESSAGES.teams.totalTeams}</p>}
             </div>
           </div>
           <Link href="/matches"
             className="inline-flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-semibold text-white transition-all hover:opacity-90"
             style={{ background: "rgba(255,255,255,0.08)", border: "1px solid rgba(255,255,255,0.15)" }}>
-            Ver partidos →
+            {MESSAGES.nav.viewMatches}
           </Link>
         </div>
       </div>
@@ -93,7 +94,7 @@ export default function TeamsPage() {
 
           {!loading && !error && (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-              {[1, 2, 3, 4].map((potId) => {
+              {POT_IDS.map((potId) => {
                 const cfg = POT_CONFIG[potId];
                 const potTeams = teamsByPot[potId] ?? [];
                 return (

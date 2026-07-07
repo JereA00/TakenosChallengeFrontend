@@ -1,6 +1,7 @@
 "use client";
 
 import { Team } from "@/lib/api";
+import { MESSAGES } from "@/lib/messages";
 
 interface Props {
   teams: Team[];
@@ -54,15 +55,15 @@ export default function MatchFilters({
       <div className="flex flex-wrap gap-4 items-end">
 
         <div className="flex flex-col" style={{ minWidth: 160 }}>
-          <label style={labelStyle}>País</label>
+          <label style={labelStyle}>{MESSAGES.filters.countryLabel}</label>
           <select
-            aria-label="Filtrar por país"
+            aria-label={MESSAGES.filters.countryAriaLabel}
             value={countryName ?? ""}
             onChange={(e) => onCountryChange(e.target.value || undefined)}
             disabled={!!teamId}
             style={{ ...selectStyle, opacity: teamId ? 0.4 : 1, minWidth: 160 }}
           >
-            <option value="" style={{ background: "#0d1e3a" }}>Todos los países</option>
+            <option value="" style={{ background: "#0d1e3a" }}>{MESSAGES.filters.allCountries}</option>
             {countries.map((c) => (
               <option key={c} value={c} style={{ background: "#0d1e3a" }}>{c}</option>
             ))}
@@ -70,14 +71,14 @@ export default function MatchFilters({
         </div>
 
         <div className="flex flex-col" style={{ minWidth: 190 }}>
-          <label style={labelStyle}>Equipo</label>
+          <label style={labelStyle}>{MESSAGES.filters.teamLabel}</label>
           <select
-            aria-label="Filtrar por equipo"
+            aria-label={MESSAGES.filters.teamAriaLabel}
             value={teamId ? String(teamId) : ""}
             onChange={(e) => onTeamChange(e.target.value ? Number(e.target.value) : undefined)}
             style={{ ...selectStyle, minWidth: 190 }}
           >
-            <option value="" style={{ background: "#0d1e3a" }}>Todos los equipos</option>
+            <option value="" style={{ background: "#0d1e3a" }}>{MESSAGES.filters.allTeams}</option>
             {filteredTeams.map((team) => (
               <option key={team.id} value={String(team.id)} style={{ background: "#0d1e3a" }}>{team.name}</option>
             ))}
@@ -85,32 +86,32 @@ export default function MatchFilters({
         </div>
 
         <div className="flex flex-col">
-          <label style={labelStyle}>Jornada</label>
+          <label style={labelStyle}>{MESSAGES.filters.matchdayLabel}</label>
           <select
-            aria-label="Filtrar por jornada"
+            aria-label={MESSAGES.filters.matchdayAriaLabel}
             value={matchDay ? String(matchDay) : ""}
             onChange={(e) => onMatchDayChange(e.target.value ? Number(e.target.value) : undefined)}
             style={{ ...selectStyle, minWidth: 140 }}
           >
-            <option value="" style={{ background: "#0d1e3a" }}>Todas</option>
+            <option value="" style={{ background: "#0d1e3a" }}>{MESSAGES.filters.allMatchdays}</option>
             {[1,2,3,4,5,6,7,8].map((day) => (
-              <option key={day} value={String(day)} style={{ background: "#0d1e3a" }}>Jornada {day}</option>
+              <option key={day} value={String(day)} style={{ background: "#0d1e3a" }}>{MESSAGES.filters.matchdayOption(day)}</option>
             ))}
           </select>
         </div>
 
         <div className="flex flex-col">
-          <label style={labelStyle}>Local / Visitante</label>
+          <label style={labelStyle}>{MESSAGES.filters.locationLabel}</label>
           <select
-            aria-label="Filtrar por localía"
+            aria-label={MESSAGES.filters.locationAriaLabel}
             value={location ?? ""}
             onChange={(e) => onLocationChange(e.target.value ? (e.target.value as "home" | "away") : undefined)}
             disabled={!teamId}
             style={{ ...selectStyle, minWidth: 140, opacity: !teamId ? 0.4 : 1 }}
           >
-            <option value="" style={{ background: "#0d1e3a" }}>Todos</option>
-            <option value="home" style={{ background: "#0d1e3a" }}>De local</option>
-            <option value="away" style={{ background: "#0d1e3a" }}>De visitante</option>
+            <option value="" style={{ background: "#0d1e3a" }}>{MESSAGES.filters.allLocations}</option>
+            <option value="home" style={{ background: "#0d1e3a" }}>{MESSAGES.filters.homeOption}</option>
+            <option value="away" style={{ background: "#0d1e3a" }}>{MESSAGES.filters.awayOption}</option>
           </select>
         </div>
 
@@ -124,7 +125,7 @@ export default function MatchFilters({
           onMouseEnter={e => (e.currentTarget.style.opacity = "0.7")}
           onMouseLeave={e => (e.currentTarget.style.opacity = "1")}
         >
-          Limpiar filtros
+          {MESSAGES.filters.clearButton}
         </button>
       </div>
     </div>

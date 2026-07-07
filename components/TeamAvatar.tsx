@@ -9,24 +9,6 @@ interface Props {
   size?: "sm" | "md" | "lg";
 }
 
-const POT_COLORS: Record<number, { bg: string; text: string }> = {
-  1: { bg: "bg-yellow-100", text: "text-yellow-800" },
-  2: { bg: "bg-slate-100",  text: "text-slate-700"  },
-  3: { bg: "bg-orange-100", text: "text-orange-800" },
-  4: { bg: "bg-blue-100",   text: "text-blue-800"   },
-};
-
-const FALLBACK_COLORS = [
-  { bg: "bg-violet-100", text: "text-violet-800" },
-  { bg: "bg-emerald-100", text: "text-emerald-800" },
-];
-
-function initials(name: string): string {
-  const words = name.trim().split(/\s+/);
-  if (words.length === 1) return words[0].slice(0, 2).toUpperCase();
-  return (words[0][0] + words[1][0]).toUpperCase();
-}
-
 const SIZE_PX = { sm: 28, md: 36, lg: 48 };
 const SIZE_CLASSES = {
   sm: "w-7 h-7 text-[10px]",

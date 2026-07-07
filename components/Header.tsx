@@ -3,11 +3,12 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import Image from "next/image";
+import { MESSAGES } from "@/lib/messages";
 
 const links = [
-  { href: "/draw", label: "Sorteo" },
-  { href: "/matches", label: "Partidos" },
-  { href: "/teams", label: "Equipos" },
+  { href: "/draw", label: MESSAGES.nav.draw },
+  { href: "/matches", label: MESSAGES.nav.matches },
+  { href: "/teams", label: MESSAGES.nav.teams },
 ];
 
 export default function Header() {
@@ -31,15 +32,15 @@ export default function Header() {
           />
           <div className="flex flex-col leading-none">
             <div className="flex items-center gap-1.5">
-              <span className="text-white font-black text-base tracking-tight">UEFA</span>
-              <span className="text-yellow-400 font-black text-base tracking-tight">Champions League</span>
+              <span className="text-white font-black text-base tracking-tight">{MESSAGES.header.uefa}</span>
+              <span className="text-yellow-400 font-black text-base tracking-tight">{MESSAGES.header.championsLeague}</span>
             </div>
             <div className="flex items-center gap-1.5 mt-0.5">
               <span className="text-[10px] text-blue-300/70 font-medium hidden sm:inline">
-                Draw · Fase de Liga
+                {MESSAGES.header.subtitle}
               </span>
               <span className="hidden sm:inline text-[10px] font-bold px-1.5 py-0.5 rounded-full bg-yellow-400/20 text-yellow-300 border border-yellow-400/30">
-                2025/26
+                {MESSAGES.header.season}
               </span>
             </div>
           </div>

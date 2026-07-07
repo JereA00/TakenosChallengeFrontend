@@ -1,3 +1,5 @@
+import { MESSAGES } from "./messages";
+
 const API_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000";
 
 export interface Team {
@@ -69,26 +71,26 @@ export async function getMatches(filters: MatchFilters = {}): Promise<MatchesRes
   if (filters.countryName) params.set("countryName", filters.countryName);
 
   const res = await fetchWithTimeout(`${API_URL}/matches?${params}`);
-  if (!res.ok) throw new Error("Error al cargar los partidos");
+  if (!res.ok) throw new Error(MESSAGES.matches.loadError);
   return res.json();
 }
 
 export async function getTeams(): Promise<Team[]> {
   const res = await fetchWithTimeout(`${API_URL}/teams`);
-  if (!res.ok) throw new Error("Error al cargar los equipos");
+  if (!res.ok) throw new Error(MESSAGES.teams.loadError);
   return res.json();
 }
 
 export async function getTeamById(id: number): Promise<{ team: Team; matches: Match[] }> {
   const res = await fetchWithTimeout(`${API_URL}/teams/${id}`);
-  if (!res.ok) throw new Error("Equipo no encontrado");
+  if (!res.ok) throw new Error(MESSAGES.teams.notFound);
   return res.json();
 }
 
 export async function getDraw(): Promise<Draw | null> {
   const res = await fetchWithTimeout(`${API_URL}/draw`);
   if (res.status === 404) return null;
-  if (!res.ok) throw new Error("Error al cargar el sorteo");
+  if (!res.ok) throw new Error(MESSAGES.draw.loadError);
   return res.json();
 }
 
@@ -97,8 +99,8 @@ export async function createDraw(): Promise<void> {
     method: "POST",
     headers: { "Content-Type": "application/json" },
   });
-  if (res.status === 409) throw new Error("Ya existe un sorteo activo");
-  if (!res.ok) throw new Error("Error al crear el sorteo");
+  if (res.status === 409) throw new Error(MESSAGES.draw.createConflict);
+  if (!res.ok) throw new Error(MESSAGES.draw.createError);
 }
 
 export async function deleteDraw(): Promise<void> {
@@ -106,13 +108,13 @@ export async function deleteDraw(): Promise<void> {
     method: "DELETE",
     headers: { "Content-Type": "application/json" },
   });
-  if (res.status === 404) throw new Error("No existe un sorteo para eliminar");
-  if (!res.ok) throw new Error("Error al eliminar el sorteo");
+  if (res.status === 404) throw new Error(MESSAGES.draw.deleteNotFound);
+  if (!res.ok) throw new Error(MESSAGES.draw.deleteError);
 }
 
 export async function getDrawStatistics(): Promise<DrawStatistics | null> {
   const res = await fetchWithTimeout(`${API_URL}/draw/statistics`);
   if (res.status === 404) return null;
-  if (!res.ok) throw new Error("Error al cargar estadísticas");
+  if (!res.ok) throw new Error(MESSAGES.statistics.loadError);
   return res.json();
 }

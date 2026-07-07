@@ -1,5 +1,7 @@
 "use client";
 
+import { MESSAGES } from "@/lib/messages";
+
 interface Props {
   page: number;
   totalPages: number;
@@ -22,7 +24,7 @@ export default function Pagination({ page, totalPages, onPageChange }: Props) {
         onClick={() => onPageChange(page - 1)}
         disabled={page === 1}
       >
-        ← Anterior
+        {MESSAGES.pagination.previous}
       </button>
 
       <span className="text-sm font-semibold" style={{ color: "rgba(147,197,253,0.7)" }}>
@@ -34,7 +36,7 @@ export default function Pagination({ page, totalPages, onPageChange }: Props) {
         onClick={() => onPageChange(page + 1)}
         disabled={page === totalPages}
       >
-        Siguiente →
+        {MESSAGES.pagination.next}
       </button>
     </div>
   );

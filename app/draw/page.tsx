@@ -1,7 +1,8 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { getDraw, createDraw, deleteDraw, Draw, getDrawStatistics, DrawStatistics } from "@/lib/api";
+import { useFetch } from "@/hooks/useFetch";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
@@ -14,42 +15,44 @@ import {
   AlertDialogTitle, AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import { HERO_BG, HERO_STARS, POT_CONFIG } from "@/lib/constants";
+import { MESSAGES } from "@/lib/messages";
 
-type Status = "idle" | "loading" | "creating" | "deleting";
+const ActionStatus = {
+  IDLE: "idle",
+  CREATING: "creating",
+  DELETING: "deleting",
+} as const;
+type ActionStatus = typeof ActionStatus[keyof typeof ActionStatus];
 
 export default function DrawPage() {
-  const [draw, setDraw] = useState<Draw | null>(null);
-  const [stats, setStats] = useState<DrawStatistics | null>(null);
-  const [status, setStatus] = useState<Status>("loading");
+  const [fetchKey, setFetchKey] = useState(0);
+  const [actionStatus, setActionStatus] = useState<ActionStatus>(ActionStatus.IDLE);
 
-  async function fetchDraw() {
-    setStatus("loading");
-    try {
-      const [d, s] = await Promise.all([getDraw(), getDrawStatistics()]);
-      setDraw(d);
-      setStats(s);
-    }
-    catch (e) { toast.error(e instanceof Error ? e.message : "Error al cargar el sorteo"); }
-    finally { setStatus("idle"); }
-  }
+  const { loading: isLoading, data } = useFetch(
+    () => Promise.all([getDraw(), getDrawStatistics()]).then(([d, s]) => ({ draw: d, stats: s })),
+    [fetchKey]
+  );
 
-  useEffect(() => { fetchDraw(); }, []);
+  const draw: Draw | null = data?.draw ?? null;
+  const stats: DrawStatistics | null = data?.stats ?? null;
+
+  function refresh() { setFetchKey((k) => k + 1); }
 
   async function handleCreate() {
-    setStatus("creating");
-    try { await createDraw(); toast.success("Sorteo creado exitosamente"); await fetchDraw(); }
-    catch (e) { toast.error(e instanceof Error ? e.message : "Error al crear el sorteo"); setStatus("idle"); }
+    setActionStatus(ActionStatus.CREATING);
+    try { await createDraw(); toast.success(MESSAGES.draw.createSuccess); refresh(); }
+    catch (e) { toast.error(e instanceof Error ? e.message : MESSAGES.draw.createError); }
+    finally { setActionStatus(ActionStatus.IDLE); }
   }
 
   async function handleDelete() {
-    setStatus("deleting");
-    try { await deleteDraw(); toast.success("Sorteo eliminado exitosamente"); setDraw(null); setStats(null); }
-    catch (e) { toast.error(e instanceof Error ? e.message : "Error al eliminar el sorteo"); }
-    finally { setStatus("idle"); }
+    setActionStatus(ActionStatus.DELETING);
+    try { await deleteDraw(); toast.success(MESSAGES.draw.deleteSuccess); refresh(); }
+    catch (e) { toast.error(e instanceof Error ? e.message : MESSAGES.draw.deleteError); }
+    finally { setActionStatus(ActionStatus.IDLE); }
   }
 
-  const isLoading = status === "loading";
-  const isActing  = status === "creating" || status === "deleting";
+  const isActing = actionStatus !== ActionStatus.IDLE;
 
   return (
     <div className="flex flex-col flex-1">
@@ -86,11 +89,11 @@ export default function DrawPage() {
               <Image src="/ucl-ball.png" alt="UCL" width={72} height={68} className="object-contain invert" />
             </div>
             <div>
-              <p className="text-yellow-400/80 text-xs font-bold tracking-widest uppercase mb-1">UEFA</p>
+              <p className="text-yellow-400/80 text-xs font-bold tracking-widest uppercase mb-1">{MESSAGES.header.uefa}</p>
               <h1 className="text-3xl font-black text-white tracking-tight leading-none">
                 Champions <span className="text-yellow-400">League</span>
               </h1>
-              <p className="text-blue-300/70 text-sm mt-1">Sorteo · Fase de Liga · 2025/26</p>
+              <p className="text-blue-300/70 text-sm mt-1">{MESSAGES.draw.subtitle}</p>
               {draw && (
                 <p className="text-white/40 text-xs mt-0.5">
                   Realizado el {new Date(draw.createdAt).toLocaleDateString("es-AR", { day: "2-digit", month: "long", year: "numeric" })}
@@ -104,10 +107,10 @@ export default function DrawPage() {
             {draw && stats && (
               <div className="hidden sm:flex gap-5 text-center">
                 {[
-                  [String(Object.values(stats.teamsPerPot).reduce((a, b) => a + b, 0)), "Equipos"],
-                  [String(Object.keys(stats.teamsPerPot).length), "Bombos"],
-                  [String(stats.totalMatches), "Partidos"],
-                  [String(Object.keys(stats.matchesPerMatchDay).length), "Jornadas"],
+                  [String(Object.values(stats.teamsPerPot).reduce((a, b) => a + b, 0)), MESSAGES.draw.teamsLabel],
+                  [String(Object.keys(stats.teamsPerPot).length), MESSAGES.draw.potsLabel],
+                  [String(stats.totalMatches), MESSAGES.draw.matchesLabel],
+                  [String(Object.keys(stats.matchesPerMatchDay).length), MESSAGES.draw.roundsLabel],
                 ].map(([n, l]) => (
                   <div key={l}>
                     <p className="text-2xl font-black text-yellow-400">{n}</p>
@@ -120,7 +123,7 @@ export default function DrawPage() {
             {!isLoading && !draw && (
               <Button onClick={handleCreate} disabled={isActing} size="lg"
                 className="bg-yellow-400 text-gray-900 hover:bg-yellow-300 font-bold shadow-lg shadow-yellow-400/20">
-                {status === "creating" ? "Creando..." : "⚽ Crear sorteo"}
+                {actionStatus === ActionStatus.CREATING ? MESSAGES.draw.creating : MESSAGES.draw.createButton}
               </Button>
             )}
 
@@ -128,26 +131,26 @@ export default function DrawPage() {
               <AlertDialog>
                 <AlertDialogTrigger disabled={isActing}
                   className="inline-flex items-center justify-center rounded-md text-sm font-medium px-4 py-2 bg-white/10 text-white border border-white/20 hover:bg-white/20 disabled:opacity-50 transition-colors">
-                  {status === "deleting" ? "Eliminando..." : "Eliminar sorteo"}
+                  {actionStatus === ActionStatus.DELETING ? MESSAGES.draw.deleting : MESSAGES.draw.deleteButton}
                 </AlertDialogTrigger>
                 <AlertDialogContent
                   style={{ background: "#0d1e3a", border: "1px solid rgba(255,255,255,0.1)" }}
                   className="shadow-2xl shadow-black/50"
                 >
                   <AlertDialogHeader>
-                    <AlertDialogTitle className="text-white">¿Eliminar el sorteo?</AlertDialogTitle>
+                    <AlertDialogTitle className="text-white">{MESSAGES.draw.deleteConfirmTitle}</AlertDialogTitle>
                     <AlertDialogDescription className="text-blue-300/70">
-                      Esta acción eliminará el sorteo y los 144 partidos generados. No se puede deshacer.
+                      {MESSAGES.draw.deleteConfirmDescription}
                     </AlertDialogDescription>
                   </AlertDialogHeader>
                   <AlertDialogFooter className="border-t border-white/10 pt-4" style={{ background: "#0d1e3a" }}>
                     <AlertDialogCancel
                       className="bg-transparent text-blue-200 border-white/20 hover:bg-white/10 hover:text-white">
-                      Cancelar
+                      {MESSAGES.common.cancel}
                     </AlertDialogCancel>
                     <AlertDialogAction onClick={handleDelete}
                       className="bg-red-600 text-white hover:bg-red-500 border-0">
-                      Sí, eliminar
+                      {MESSAGES.draw.confirmDelete}
                     </AlertDialogAction>
                   </AlertDialogFooter>
                 </AlertDialogContent>
@@ -173,9 +176,9 @@ export default function DrawPage() {
                 <Image src="/ucl-ball.png" alt="UCL" width={96} height={91} className="object-contain invert" />
               </div>
               <div>
-                <p className="text-xl font-bold text-white">No hay ningún sorteo activo</p>
+                <p className="text-xl font-bold text-white">{MESSAGES.draw.noDrawTitle}</p>
                 <p className="text-blue-300/60 mt-1 text-sm max-w-sm mx-auto">
-                  Generá el sorteo para ver los 36 equipos distribuidos en 4 bombos y los 144 partidos de la fase de liga.
+                  {MESSAGES.draw.noDrawDescription}
                 </p>
               </div>
             </div>
@@ -232,7 +235,7 @@ export default function DrawPage() {
                 <Link href="/matches"
                   className="inline-flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-semibold text-white transition-all hover:opacity-90"
                   style={{ background: "rgba(255,255,255,0.08)", border: "1px solid rgba(255,255,255,0.15)" }}>
-                  Ver todos los partidos →
+                  {MESSAGES.nav.viewAllMatches}
                 </Link>
               </div>
             </>

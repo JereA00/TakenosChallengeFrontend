@@ -1,3 +1,8 @@
+import { MESSAGES } from "./messages";
+
+export const MATCHES_PAGE_LIMIT = 18;
+export const POT_IDS = [1, 2, 3, 4] as const;
+
 export const HERO_BG = "linear-gradient(135deg, #0a1628 0%, #0d2244 60%, #1a3a6b 100%)";
 
 export const HERO_STARS = [
@@ -10,8 +15,8 @@ export const HERO_STARS = [
 export const POT_CONFIG: Record<number, {
   label: string; accent: string; badgeBg: string; badgeText: string; dot: string;
 }> = {
-  1: { label: "Bombo 1", accent: "#FFC72C", badgeBg: "rgba(255,199,44,0.15)",  badgeText: "#FFC72C", dot: "#FFC72C" },
-  2: { label: "Bombo 2", accent: "#60a5fa", badgeBg: "rgba(96,165,250,0.15)",  badgeText: "#93c5fd", dot: "#60a5fa" },
-  3: { label: "Bombo 3", accent: "#34d399", badgeBg: "rgba(52,211,153,0.15)",  badgeText: "#6ee7b7", dot: "#34d399" },
-  4: { label: "Bombo 4", accent: "#f87171", badgeBg: "rgba(248,113,113,0.15)", badgeText: "#fca5a5", dot: "#f87171" },
+  1: { label: MESSAGES.pots.label(1), accent: "#FFC72C", badgeBg: "rgba(255,199,44,0.15)",  badgeText: "#FFC72C", dot: "#FFC72C" },
+  2: { label: MESSAGES.pots.label(2), accent: "#60a5fa", badgeBg: "rgba(96,165,250,0.15)",  badgeText: "#93c5fd", dot: "#60a5fa" },
+  3: { label: MESSAGES.pots.label(3), accent: "#34d399", badgeBg: "rgba(52,211,153,0.15)",  badgeText: "#6ee7b7", dot: "#34d399" },
+  4: { label: MESSAGES.pots.label(4), accent: "#f87171", badgeBg: "rgba(248,113,113,0.15)", badgeText: "#fca5a5", dot: "#f87171" },
 };

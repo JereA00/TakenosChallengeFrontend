@@ -2,7 +2,8 @@
 
 import { useEffect, useMemo, useReducer, useState } from "react";
 import { getMatches, getTeams, Match, Team, MatchesResponse } from "@/lib/api";
-import { HERO_BG, HERO_STARS } from "@/lib/constants";
+import { HERO_BG, HERO_STARS, MATCHES_PAGE_LIMIT } from "@/lib/constants";
+import { MESSAGES } from "@/lib/messages";
 import { groupMatchesByDay } from "@/lib/matches";
 import MatchCard from "@/components/MatchCard";
 import MatchFilters from "@/components/MatchFilters";
@@ -43,7 +44,7 @@ export default function MatchesPage() {
 
   useEffect(() => {
     let cancelled = false;
-    getMatches({ teamId, matchDay, location, countryName, page, limit: 18 })
+    getMatches({ teamId, matchDay, location, countryName, page, limit: MATCHES_PAGE_LIMIT })
       .then((data: MatchesResponse) => {
         if (!cancelled) dispatch({
           type: "success",
@@ -52,7 +53,7 @@ export default function MatchesPage() {
         });
       })
       .catch((e) => {
-        if (!cancelled) dispatch({ type: "error", message: e instanceof Error ? e.message : "Error desconocido" });
+        if (!cancelled) dispatch({ type: "error", message: e instanceof Error ? e.message : MESSAGES.errors.unknown });
       });
     return () => { cancelled = true; };
   }, [teamId, matchDay, location, countryName, page]);
@@ -92,18 +93,18 @@ export default function MatchesPage() {
               <Image src="/ucl-ball.png" alt="UCL" width={72} height={68} className="object-contain invert" />
             </div>
             <div>
-              <p className="text-yellow-400/80 text-xs font-bold tracking-widest uppercase mb-1">UEFA</p>
+              <p className="text-yellow-400/80 text-xs font-bold tracking-widest uppercase mb-1">{MESSAGES.header.uefa}</p>
               <h1 className="text-3xl font-black text-white tracking-tight leading-none">
                 Champions <span className="text-yellow-400">League</span>
               </h1>
-              <p className="text-blue-300/70 text-sm mt-1">Partidos · Fase de Liga · 2025/26</p>
-              {!loading && <p className="text-white/40 text-xs mt-0.5">{pagination.total} partidos en total</p>}
+              <p className="text-blue-300/70 text-sm mt-1">{MESSAGES.matches.subtitle}</p>
+              {!loading && <p className="text-white/40 text-xs mt-0.5">{pagination.total} {MESSAGES.matches.totalMatches}</p>}
             </div>
           </div>
           <Link href="/teams"
             className="inline-flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-semibold text-white transition-all hover:opacity-90"
             style={{ background: "rgba(255,255,255,0.08)", border: "1px solid rgba(255,255,255,0.15)" }}>
-            Ver equipos →
+            {MESSAGES.nav.viewTeams}
           </Link>
         </div>
       </div>
@@ -136,7 +137,7 @@ export default function MatchesPage() {
 
           {!loading && !error && matches.length === 0 && (
             <p className="text-center py-12" style={{ color: "rgba(147,197,253,0.4)" }}>
-              No hay partidos para los filtros seleccionados.
+              {MESSAGES.matches.noResults}
             </p>
           )}
 
@@ -148,11 +149,11 @@ export default function MatchesPage() {
                   <div className="flex items-center gap-3">
                     <span className="text-xs font-black tracking-widest uppercase px-3 py-1 rounded-full"
                       style={{ background: "rgba(255,199,44,0.15)", color: "#FFC72C" }}>
-                      Jornada {day}
+                      {MESSAGES.matches.matchday(day)}
                     </span>
                     <div className="flex-1 h-px" style={{ background: "rgba(255,255,255,0.07)" }} />
                     <span className="text-xs" style={{ color: "rgba(147,197,253,0.4)" }}>
-                      {matchesByDay[day].length} partidos
+                      {matchesByDay[day].length} {MESSAGES.matches.matchesCount}
                     </span>
                   </div>
                   {/* Grid 2 columnas */}

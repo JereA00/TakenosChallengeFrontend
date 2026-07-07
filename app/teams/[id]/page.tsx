@@ -3,6 +3,7 @@
 import { useMemo } from "react";
 import { getTeamById, Team, Match } from "@/lib/api";
 import { useFetch } from "@/hooks/useFetch";
+import { MESSAGES } from "@/lib/messages";
 import { useParams } from "next/navigation";
 import MatchCard from "@/components/MatchCard";
 import TeamAvatar from "@/components/TeamAvatar";
@@ -17,7 +18,7 @@ export default function TeamDetailPage() {
 
   const { loading, error, data } = useFetch(() => getTeamById(id), [id]);
   const team: Team | null = data?.team ?? null;
-  const matches: Match[] = data?.matches ?? [];
+  const matches = useMemo(() => data?.matches ?? [], [data]);
 
   const homeMatches = useMemo(() => matches.filter((m) => m.homeTeam.id === id), [matches, id]);
   const awayMatches = useMemo(() => matches.filter((m) => m.awayTeam.id === id), [matches, id]);
@@ -52,7 +53,7 @@ export default function TeamDetailPage() {
       `}</style>
         <div className="max-w-4xl mx-auto relative z-10">
           <Link href="/teams" className="inline-flex items-center gap-1.5 text-sm text-blue-300/70 hover:text-blue-200 transition-colors mb-5">
-            ← Volver a equipos
+            {MESSAGES.nav.backToTeams}
           </Link>
 
           {loading && (
@@ -70,7 +71,7 @@ export default function TeamDetailPage() {
                   <TeamAvatar name={team.name} pot={team.pot} size="lg" />
                 </div>
                 <div>
-                  <p className="text-yellow-400/80 text-xs font-bold tracking-widest uppercase mb-1">UEFA · Champions League</p>
+                  <p className="text-yellow-400/80 text-xs font-bold tracking-widest uppercase mb-1">{MESSAGES.header.uefaChampionsLeague}</p>
                   <h1 className="text-2xl font-black text-white">{team.name}</h1>
                   <p className="text-blue-300/60 text-sm mt-0.5">{getFlag(team.country.name)} {team.country.name}</p>
                 </div>
@@ -80,9 +81,9 @@ export default function TeamDetailPage() {
               <div className="flex items-center gap-6">
                 <div className="hidden sm:flex gap-5 text-center">
                   {[
-                    { n: matches.length, l: "Partidos" },
-                    { n: homeMatches.length, l: "De local" },
-                    { n: awayMatches.length, l: "De visitante" },
+                    { n: matches.length, l: MESSAGES.teamDetail.matchesLabel },
+                    { n: homeMatches.length, l: MESSAGES.teamDetail.homeLabel },
+                    { n: awayMatches.length, l: MESSAGES.teamDetail.awayLabel },
                   ].map(({ n, l }) => (
                     <div key={l}>
                       <p className="text-2xl font-black text-yellow-400">{n}</p>
@@ -115,13 +116,13 @@ export default function TeamDetailPage() {
                 <div className="flex items-center gap-3">
                   <span className="text-xs font-black tracking-widest uppercase px-3 py-1 rounded-full"
                     style={{ background: "rgba(96,165,250,0.12)", color: "#60a5fa" }}>
-                    De local · {homeMatches.length}
+                    {MESSAGES.teamDetail.homeMatches(homeMatches.length)}
                   </span>
                   <div className="flex-1 h-px" style={{ background: "rgba(255,255,255,0.07)" }} />
                 </div>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
                   {homeMatches.length === 0
-                    ? <p className="text-sm" style={{ color: "rgba(147,197,253,0.4)" }}>Sin partidos de local</p>
+                    ? <p className="text-sm" style={{ color: "rgba(147,197,253,0.4)" }}>{MESSAGES.teamDetail.noHomeMatches}</p>
                     : homeMatches.map((m) => <MatchCard key={m.id} match={m} />)}
                 </div>
               </div>
@@ -131,13 +132,13 @@ export default function TeamDetailPage() {
                 <div className="flex items-center gap-3">
                   <span className="text-xs font-black tracking-widest uppercase px-3 py-1 rounded-full"
                     style={{ background: "rgba(52,211,153,0.12)", color: "#34d399" }}>
-                    De visitante · {awayMatches.length}
+                    {MESSAGES.teamDetail.awayMatches(awayMatches.length)}
                   </span>
                   <div className="flex-1 h-px" style={{ background: "rgba(255,255,255,0.07)" }} />
                 </div>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
                   {awayMatches.length === 0
-                    ? <p className="text-sm" style={{ color: "rgba(147,197,253,0.4)" }}>Sin partidos de visitante</p>
+                    ? <p className="text-sm" style={{ color: "rgba(147,197,253,0.4)" }}>{MESSAGES.teamDetail.noAwayMatches}</p>
                     : awayMatches.map((m) => <MatchCard key={m.id} match={m} />)}
                 </div>
               </div>
